@@ -1,0 +1,122 @@
+.main-div {
+    position: relative;
+}
+
+.blurred-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.blurred-box:after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-shadow: inset 0 0 0 200px rgba(255, 255, 255, 0.05);
+    filter: blur(10px);
+}
+
+.typography {
+    position: absolute;
+    left: 5%;
+    top: 2%;
+    z-index: 1;
+    font-weight: bold;
+    font-size: 40px;
+    color: white;
+    text-shadow: 0px 0px 5px black;
+}
+
+button {
+    position: absolute;
+    bottom: 5%;
+    z-index: 1;
+    font-size: 20px;
+    border-radius: 50px;
+    cursor: pointer;
+
+    background: no-repeat center;
+    background-size: 70%;
+    height: 50px;
+    border: none;
+}
+
+.fileInput {
+    opacity: 0;
+    position: absolute;
+}
+
+.main-button {
+    left: 50%;
+    transform: translate(-50%);
+    padding-right: 20px;
+    padding-left: 20px;
+    background-color: white;
+}
+
+.secondary-button {
+    background-color: deeppink;
+    width: 50px;
+    left: 5%;
+}
+
+.next-button {
+    background-color: white;
+    width: 50px;
+    right: 5%;
+}
+
+.back-button {
+    background-image: url("../icons/return.png");
+}
+
+.photo-button {
+    background-image: url("../icons/photo.png");
+}
+
+.next-button {
+    background-image: url("../icons/next.png");
+}
+
+.oval {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    height: 60%;
+    width: 70%;
+    border-radius: 40%;
+    box-shadow: 0 0 9999px 99999px rgba(0, 0, 0, 0.7);
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.oval:after {
+
+}
+
+.vl {
+    position: absolute;
+    height: 70%;
+    width: 2px;
+    left: 50%;
+    top: 5%;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.hl {
+    position: absolute;
+    width: 90%;
+    height: 2px;
+    left: 5%;
+    top: 35%;
+    background-color: rgba(255, 255, 255, 0.5);
+}

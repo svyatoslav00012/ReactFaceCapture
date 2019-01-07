@@ -1,28 +1,51 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import CapturePhoto from "./CapturePhoto";
+import axios from 'axios';
+import './static/css/app.css';
+import CheckPhoto from "./CheckPhoto";
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+export default class App extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            imageSrc: null
+        };
+        this.onCapture = this.onCapture.bind(this);
+        this.onConfirm = this.onConfirm.bind(this);
+        this.onBack = this.onBack.bind(this);
+    }
+
+    setImage(newSrc) {
+        this.setState({
+            imageSrc: newSrc
+        });
+    }
+
+    onCapture(newSrc) {
+        this.setImage(newSrc);
+    }
+
+    onConfirm() {
+        axios.post("/addImage", this.state.imageSrc);
+    }
+
+    onBack() {
+        this.setImage(null);
+    }
+
+    render() {
+        const videoConstraints = {
+            width: 300,
+            height: 480,
+            facingMode: "user",
+        };
+        if (this.state.imageSrc == null)
+            return <CapturePhoto onCapture={this.onCapture}
+                                 videoConstraints={videoConstraints}/>;
+        else return <CheckPhoto videoConstraints={videoConstraints}
+                                imageSrc={this.state.imageSrc}
+                                onConfirm={this.onConfirm}
+                                onBack={this.onBack}/>
+    }
 }
-
-export default App;
