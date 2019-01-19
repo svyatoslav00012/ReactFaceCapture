@@ -8,7 +8,7 @@ import FaceDetector from "./utils/FaceDetector";
 import ImageMirrorer from "./utils/ImageMirrorer";
 
 const videoConstraints = {
-    width: 320,
+    width: 640,
     height: 480,
     frameRate: 60,
     facingMode: "user",
@@ -27,7 +27,7 @@ export default class App extends React.Component {
                     this.webcam,
                     this.setFaceBox
                 ),
-            20);
+            300);
     };
 
     constructor(props) {
@@ -84,6 +84,7 @@ export default class App extends React.Component {
     }
 
     setFaceBox(facebox) {
+        console.log(facebox);
         this.setState({
             faceBox: facebox
         });

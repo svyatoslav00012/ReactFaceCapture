@@ -28,11 +28,6 @@ export default class CapturePhoto extends React.Component {
 
         const scale = 1.5;
 
-        const size = {
-            width: this.props.videoConstraints.width * scale,
-            height: this.props.videoConstraints.height * scale,
-        };
-
         const mirror = {
             MozTransform: 'scale(-1, 1)',
             WebkitTransform: 'scale(-1, 1)',
@@ -41,36 +36,40 @@ export default class CapturePhoto extends React.Component {
         };
 
         let drawBox = (
-            <div>
-                <div
-                    className="face-box"
-                    style={{
-                        height: this.props.faceBox.height,
-                        width: this.props.faceBox.width,
-                        transform: `translate(${this.props.faceBox.x}px,${this.props.faceBox.y}px)`,
-                    }}
-                >
-                </div>
-            </div>
+            <div
+                className="face-box"
+                style={{
+                    position: 'absolute',
+                    height: this.props.faceBox.height,
+                    width: this.props.faceBox.width,
+                    top: this.props.faceBox.y + 'px',
+                    left: 0,
+                }}
+            />
         );
 
         return (
 
-            <div style={size} className="main-div">
+            <div className="main-div">
                 <div className="typography">Add photo</div>
-                <Webcam
-                    style={this.props.mirror ? mirror : {}}
-                    className="webcam-video"
-                    audio={false}
-                    imageSmoothing={true}
-                    height={size.height}
-                    width={size.width}
-                    ref={this.props.setRef}
-                    screenshotFormat="image/jpeg"
-                    screenshotQuality={1}
-                    videoConstraints={this.props.videoConstraints}
-                    onUserMedia={this.onUserMedia}
-                />
+                <div className="webcam-div">
+                    <Webcam
+                        style={{
+                            ...(this.props.mirror ? mirror : {}),
+                            left: -this.props.faceBox.x,
+                        }}
+                        className="webcam-video"
+                        audio={false}
+                        imageSmoothing={true}
+                        height={480}
+                        width={640}
+                        ref={this.props.setRef}
+                        screenshotFormat="image/jpeg"
+                        screenshotQuality={1}
+                        videoConstraints={this.props.videoConstraints}
+                        onUserMedia={this.onUserMedia}
+                    />
+                </div>
                 {drawBox}
                 <div className="oval"/>
                 <div className="vl"/>
