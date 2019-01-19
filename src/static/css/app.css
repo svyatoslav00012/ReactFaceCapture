@@ -51,7 +51,7 @@ button {
 }
 
 .fileInput {
-    opacity: 0;
+    display: none;
     position: absolute;
 }
 
@@ -75,6 +75,15 @@ button {
     right: 5%;
 }
 
+.face-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: solid blue;
+    zIndex: 3;
+    background: transparent;
+}
+
 .back-button {
     background-image: url("../icons/return.png");
 }
@@ -93,10 +102,11 @@ button {
     left: 50%;
     height: 60%;
     width: 70%;
-    border-radius: 40%;
     box-shadow: 0 0 9999px 99999px rgba(0, 0, 0, 0.7);
     transform: translate(-50%, -50%);
     border: 2px solid rgba(255, 255, 255, 0.5);
+    /*border: 9999px solid rgba(0, 0, 0, 0.7);*/
+    border-radius: 40%;
 }
 
 .oval:after {

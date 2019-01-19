@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@tensorflow/tfjs-node": "^0.2.1",
     "axios": "^0.18.0",
+    "canvas": "^2.2.0",
+    "face-api.js": "^0.17.1",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-scripts": "2.1.3",
