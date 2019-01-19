@@ -83,11 +83,17 @@ export default class App extends React.Component {
         });
     }
 
-    setFaceBox(facebox) {
-        console.log(facebox);
-        this.setState({
-            faceBox: facebox
-        });
+    setFaceBox(faceBox) {
+        if (this.farFromCurrent(faceBox))
+            this.setState({
+                faceBox: faceBox
+            });
+    }
+
+    farFromCurrent(faceBox) {
+        const treshold = 20;
+        return Math.abs(faceBox.x - this.state.faceBox.x) > treshold ||
+            Math.abs(faceBox.y - this.state.faceBox.y) > treshold;
     }
 
     setImage(src) {
