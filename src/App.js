@@ -8,7 +8,7 @@ import FaceDetector from "./utils/FaceDetector";
 import ImageMirrorer from "./utils/ImageMirrorer";
 
 const videoConstraints = {
-    width: 300,
+    width: 320,
     height: 480,
     frameRate: 60,
     facingMode: "user",
