@@ -17,14 +17,16 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
         this.webcam = React.createRef();
+        const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
         this.state = {
             imageSrc: null,
             mirror: true,
             faceBox: {
                 x: 0,
                 y: 0,
-                width: 300,
-                height: 606,
+                width: viewportHeight * 0.45,
+                height: viewportHeight * 0.8,
             },
             videoConstraints: {
                 width: 640,
@@ -33,8 +35,8 @@ export default class App extends React.Component {
                 facingMode: "user",
             },
             viewport: {
-                width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
-                height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
+                width: viewportWidth,
+                height: viewportHeight,
             }
         };
 
@@ -119,8 +121,8 @@ export default class App extends React.Component {
     }
 
     isFarFromCurrent(faceBox) {
-        const thresholdX = 0;
-        const thresholdY = 0;
+        const thresholdX = 50;
+        const thresholdY = 30;
         return Math.abs(faceBox.x - this.state.faceBox.x) > thresholdX ||
             Math.abs(faceBox.y - this.state.faceBox.y) > thresholdY;
     }

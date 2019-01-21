@@ -27,11 +27,12 @@ export default class CapturePhoto extends React.Component {
     render() {
 
         const videoCnstrts = this.props.videoConstraints;
+        const rectWidth = this.props.viewport.height * 0.45;
         const rectHeight = this.props.viewport.height * 0.8;
 
-        const scale = rectHeight / videoCnstrts.height;
+        const scale = rectWidth / this.props.faceBox.width;
 
-        console.log(rectHeight + " / " + videoCnstrts.height + " = " + scale);
+        console.log(rectWidth + " / " + this.props.faceBox.width + " = " + scale);
 
         const mirror = {
             MozTransform: 'scale(-1, 1)',
@@ -45,9 +46,9 @@ export default class CapturePhoto extends React.Component {
                 className="face-box"
                 style={{
                     position: 'absolute',
-                    height: this.props.faceBox.height,
-                    width: this.props.faceBox.width,
-                    top: this.props.faceBox.y,
+                    height: this.props.faceBox.height * scale,
+                    width: this.props.faceBox.width * scale,
+                    top: 1 / 6 * rectHeight,
                     left: 0,
                 }}
             />
@@ -62,7 +63,7 @@ export default class CapturePhoto extends React.Component {
                         style={{
                             ...(this.props.mirror ? mirror : {}),
                             left: -this.props.faceBox.x * scale,
-                            top: 0,//-this.props.faceBox.y * scale,
+                            top: -this.props.faceBox.y * scale + 1 / 6 * rectHeight,
                         }}
                         className="webcam-video"
                         audio={false}

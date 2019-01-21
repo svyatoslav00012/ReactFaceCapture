@@ -12,13 +12,9 @@ export default class CheckPhoto extends React.Component {
     }
 
     render() {
-        const height = this.props.videoConstraints.height * 1.5;
-        const width = this.props.videoConstraints.width * 1.5;
-        const size = {height: height, width: width};
-
-        return (<div style={size} className="main-div">
+        return (<div className="main-div">
             <div className="typography">Confirm photo</div>
-            <img style={size} src={this.props.imageSrc}/>
+            <img className="check-photo" src={this.props.imageSrc}/>
             <button className="secondary-button back-button" onClick={this.props.onBack}/>
             <button className="main-button" onClick={this.props.onConfirm}>Confirm</button>
             <button className="next-button next-button" onClick={this.onNext}/>

@@ -1,9 +1,11 @@
+.main-div, .webcam-div {
+    width: 45vh;
+    min-width: 300px;
+    padding-top: 80vh;
+}
+
 .main-div {
     position: relative;
-    width: 30vw;
-    min-width: 300px;
-    height: 80vh;
-    min-height: 480px;
 }
 
 .main-div * {
@@ -11,19 +13,30 @@
 }
 
 .webcam-div {
-    width: 30vw;
-    min-width: 300px;
-    height: 80vh;
-    min-height: 480px;
     top: 0;
     left: 0;
     overflow: hidden;
 }
 
 .webcam-video {
-    position: ;
     top: 0;
     left: 0;
+}
+
+.face-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: solid blue;
+    z-index: 3;
+    pointer-events: none;
+    background: transparent;
+}
+
+.check-photo {
+    top: 0;
+    left: 0;
+    padding-top: 0 !important;
 }
 
 .typography {
@@ -74,16 +87,6 @@ button {
     background-color: white;
     width: 50px;
     right: 5%;
-}
-
-.face-box {
-    position: absolute;
-    top: 0;
-    left: 0;
-    border: solid blue;
-    z-index: 3;
-    pointer-events: none;
-    background: transparent;
 }
 
 .back-button {
