@@ -1,8 +1,9 @@
 .main-div {
     position: relative;
-    height: 0;
-    width: 250px;
-    padding-top: 480px;
+    width: 30vw;
+    min-width: 300px;
+    height: 80vh;
+    min-height: 480px;
 }
 
 .main-div * {
@@ -10,15 +11,17 @@
 }
 
 .webcam-div {
+    width: 30vw;
+    min-width: 300px;
+    height: 80vh;
+    min-height: 480px;
     top: 0;
     left: 0;
-    width: 250px;
-    height: 480px;
     overflow: hidden;
 }
 
 .webcam-video {
-    position: absolute;
+    position: ;
     top: 0;
     left: 0;
 }
@@ -79,6 +82,7 @@ button {
     left: 0;
     border: solid blue;
     z-index: 3;
+    pointer-events: none;
     background: transparent;
 }
 
@@ -94,6 +98,15 @@ button {
     background-image: url("../icons/next.png");
 }
 
+.oval-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
 .oval {
     position: absolute;
     top: 40%;
@@ -103,12 +116,7 @@ button {
     box-shadow: 0 0 9999px 99999px rgba(0, 0, 0, 0.7);
     transform: translate(-50%, -50%);
     border: 2px solid rgba(255, 255, 255, 0.5);
-    /*border: 9999px solid rgba(0, 0, 0, 0.7);*/
     border-radius: 40%;
-}
-
-.oval:after {
-
 }
 
 .vl {

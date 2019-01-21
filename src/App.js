@@ -6,28 +6,12 @@ import CheckPhoto from "./elems/CheckPhoto";
 import Checkbox from "./elems/Checkbox";
 import FaceDetector from "./utils/FaceDetector";
 import ImageMirrorer from "./utils/ImageMirrorer";
-
-const videoConstraints = {
-    width: 640,
-    height: 480,
-    frameRate: 60,
-    facingMode: "user",
-};
+import {findMaxResolution} from "./utils/utils";
 
 export default class App extends React.Component {
 
     setRef = webcam => {
         this.webcam = webcam;
-    };
-    startHandleVideo = () => {
-        this.interval = setInterval(() =>
-                FaceDetector.faceDetection(
-                    this.state.imageSrc,
-                    this.state.mirror,
-                    this.webcam,
-                    this.setFaceBox
-                ),
-            300);
     };
 
     constructor(props) {
@@ -39,11 +23,22 @@ export default class App extends React.Component {
             faceBox: {
                 x: 0,
                 y: 0,
-                width: videoConstraints.width * 1.5,
-                height: videoConstraints.height * 1.5,
+                width: 300,
+                height: 606,
+            },
+            videoConstraints: {
+                width: 640,
+                height: 480,
+                frameRate: 60,
+                facingMode: "user",
+            },
+            viewport: {
+                width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+                height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
             }
         };
 
+        this.handleResize = this.handleResize.bind(this);
         this.setRef = this.setRef.bind(this);
 
         this.onCapture = this.onCapture.bind(this);
@@ -52,15 +47,39 @@ export default class App extends React.Component {
 
         this.setImage = this.setImage.bind(this);
         this.setFaceBox = this.setFaceBox.bind(this);
+        this.setVideoConstraintsResolution = this.setVideoConstraintsResolution.bind(this);
         this.onMirrorChange = this.onMirrorChange.bind(this);
 
+        this.handlingCurrentFrame = this.handlingCurrentFrame.bind(this);
         this.handlePhotoChoose = this.handlePhotoChoose.bind(this);
+
     }
 
-    async componentDidMount() {
-        await FaceDetector.loadModels();
-        this.startHandleVideo();
+    componentDidMount() {
+        window.addEventListener('resize', this.handleResize);
+        findMaxResolution().then(this.setVideoConstraintsResolution);
+        FaceDetector.loadModels()
+            .then(this.handlingCurrentFrame);
     }
+
+    handleResize(e) {
+        this.setState({
+            viewport: {
+                width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+                height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
+            },
+        });
+    }
+
+    handlingCurrentFrame() {
+        FaceDetector.faceDetection(
+            this.state.imageSrc,
+            this.state.mirror,
+            this.webcam,
+            this.setFaceBox,
+            this.handlingCurrentFrame
+        );
+    };
 
     onCapture() {
         if (this.state.mirror)
@@ -84,20 +103,29 @@ export default class App extends React.Component {
     }
 
     setFaceBox(faceBox) {
-        if (this.farFromCurrent(faceBox))
+        if (this.isFarFromCurrent(faceBox))
             this.setState({
                 faceBox: faceBox
             });
     }
 
-    farFromCurrent(faceBox) {
-        const treshold = 20;
-        return Math.abs(faceBox.x - this.state.faceBox.x) > treshold ||
-            Math.abs(faceBox.y - this.state.faceBox.y) > treshold;
+    setVideoConstraintsResolution(resolution) {
+        this.setState({
+            videoConstraints: {
+                ...this.state.videoConstraints,
+                ...resolution
+            }
+        });
+    }
+
+    isFarFromCurrent(faceBox) {
+        const thresholdX = 0;
+        const thresholdY = 0;
+        return Math.abs(faceBox.x - this.state.faceBox.x) > thresholdX ||
+            Math.abs(faceBox.y - this.state.faceBox.y) > thresholdY;
     }
 
     setImage(src) {
-        console.log(this);
         this.setState({
             imageSrc: src
         });
@@ -113,19 +141,20 @@ export default class App extends React.Component {
 
     render() {
 
-        return (<div>
-            {this.state.imageSrc ?
-                <CheckPhoto videoConstraints={videoConstraints}
-                            imageSrc={this.state.imageSrc}
-                            onConfirm={this.onConfirm}
-                            onBack={this.onBack}/> :
-                <CapturePhoto webcam={this.webcam}
-                              setRef={this.setRef}
-                              mirror={this.state.mirror}
-                              onCapture={this.onCapture}
-                              videoConstraints={videoConstraints}
-                              faceBox={this.state.faceBox}
-                              handlePhotoChoose={this.handlePhotoChoose}/>}
+        const checkPhoto = (<CheckPhoto videoConstraints={this.state.videoConstraints}
+                                        imageSrc={this.state.imageSrc}
+                                        onConfirm={this.onConfirm}
+                                        onBack={this.onBack}/>);
+
+        const capturePhoto = (<CapturePhoto webcam={this.webcam}
+                                            setRef={this.setRef}
+                                            {...this.state}
+                                            onCapture={this.onCapture}
+                                            handlePhotoChoose={this.handlePhotoChoose}/>);
+
+
+        return (<div style={{display: 'flex'}}>
+            {this.state.imageSrc ? checkPhoto : capturePhoto}
             <Checkbox value={this.state.mirror}
                       onChange={this.onMirrorChange}
                       label="mirror"/>

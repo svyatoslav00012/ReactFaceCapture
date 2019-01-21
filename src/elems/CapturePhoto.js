@@ -26,7 +26,12 @@ export default class CapturePhoto extends React.Component {
 
     render() {
 
-        const scale = 1.5;
+        const videoCnstrts = this.props.videoConstraints;
+        const rectHeight = this.props.viewport.height * 0.8;
+
+        const scale = rectHeight / videoCnstrts.height;
+
+        console.log(rectHeight + " / " + videoCnstrts.height + " = " + scale);
 
         const mirror = {
             MozTransform: 'scale(-1, 1)',
@@ -42,7 +47,7 @@ export default class CapturePhoto extends React.Component {
                     position: 'absolute',
                     height: this.props.faceBox.height,
                     width: this.props.faceBox.width,
-                    top: this.props.faceBox.y + 'px',
+                    top: this.props.faceBox.y,
                     left: 0,
                 }}
             />
@@ -56,22 +61,25 @@ export default class CapturePhoto extends React.Component {
                     <Webcam
                         style={{
                             ...(this.props.mirror ? mirror : {}),
-                            left: -this.props.faceBox.x,
+                            left: -this.props.faceBox.x * scale,
+                            top: 0,//-this.props.faceBox.y * scale,
                         }}
                         className="webcam-video"
                         audio={false}
                         imageSmoothing={true}
-                        height={480}
-                        width={640}
+                        height={videoCnstrts.height * scale}
+                        width={videoCnstrts.width * scale}
                         ref={this.props.setRef}
                         screenshotFormat="image/jpeg"
                         screenshotQuality={1}
-                        videoConstraints={this.props.videoConstraints}
+                        videoConstraints={videoCnstrts}
                         onUserMedia={this.onUserMedia}
                     />
                 </div>
                 {drawBox}
-                <div className="oval"/>
+                <div className="oval-container">
+                    <div className="oval"/>
+                </div>
                 <div className="vl"/>
                 <div className="hl"/>
 
