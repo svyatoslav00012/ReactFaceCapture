@@ -5,28 +5,27 @@ import './static/css/app.css';
 import CheckPhoto from "./elems/CheckPhoto";
 import Checkbox from "./elems/Checkbox";
 import FaceDetector from "./utils/FaceDetector";
-import ImageMirrorer from "./utils/ImageMirrorer";
 import {findMaxResolution} from "./utils/utils";
+import ImageCuter from "./utils/ImageCuter";
 
 export default class App extends React.Component {
 
-    setRef = webcam => {
-        this.webcam = webcam;
-    };
+    setRef = webcam => this.webcam = webcam;
 
     constructor(props) {
         super(props);
-        this.webcam = React.createRef();
+        this.webcam = null;
         const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
         const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
         this.state = {
             imageSrc: null,
             mirror: true,
+            handling: true,
             faceBox: {
                 x: 0,
                 y: 0,
                 width: viewportHeight * 0.45,
-                height: viewportHeight * 0.8,
+                height: viewportHeight * 0.4,
             },
             videoConstraints: {
                 width: 640,
@@ -37,7 +36,7 @@ export default class App extends React.Component {
             viewport: {
                 width: viewportWidth,
                 height: viewportHeight,
-            }
+            },
         };
 
         this.handleResize = this.handleResize.bind(this);
@@ -54,7 +53,6 @@ export default class App extends React.Component {
 
         this.handlingCurrentFrame = this.handlingCurrentFrame.bind(this);
         this.handlePhotoChoose = this.handlePhotoChoose.bind(this);
-
     }
 
     componentDidMount() {
@@ -64,7 +62,7 @@ export default class App extends React.Component {
             .then(this.handlingCurrentFrame);
     }
 
-    handleResize(e) {
+    handleResize() {
         this.setState({
             viewport: {
                 width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
@@ -74,19 +72,22 @@ export default class App extends React.Component {
     }
 
     handlingCurrentFrame() {
-        FaceDetector.faceDetection(
-            this.state.imageSrc,
-            this.state.mirror,
-            this.webcam,
-            this.setFaceBox,
-            this.handlingCurrentFrame
-        );
+        //console.log("enter handling");
+        if (this.state.handling && !!this.webcam) {
+            FaceDetector.faceDetection(
+                this.state.mirror,
+                this.webcam,
+                this.setFaceBox,
+                this.handlingCurrentFrame
+            );
+            //   console.log("oo, handling!");
+        }
     };
 
     onCapture() {
-        if (this.state.mirror)
-            ImageMirrorer.captureAndMirrorImage(this.webcam, this.setImage);
-        else this.setImage(this.webcam.getScreenshot());
+        const screen = this.webcam.getScreenshot();
+        ImageCuter.getPartOfAnImage(screen, 0, 0, 300, 300, this.setImage);
+        this.setState({handling: false});
     }
 
     onConfirm() {
@@ -95,7 +96,9 @@ export default class App extends React.Component {
     }
 
     onBack() {
+        this.setState({handling: true});
         this.setImage(null);
+        setTimeout(this.handlingCurrentFrame, 3000);
     }
 
     onMirrorChange(e) {
@@ -121,10 +124,9 @@ export default class App extends React.Component {
     }
 
     isFarFromCurrent(faceBox) {
-        const thresholdX = 50;
-        const thresholdY = 30;
-        return Math.abs(faceBox.x - this.state.faceBox.x) > thresholdX ||
-            Math.abs(faceBox.y - this.state.faceBox.y) > thresholdY;
+        const threshold = 10;
+        return Math.abs(faceBox.x - this.state.faceBox.x) > threshold ||
+            Math.abs(faceBox.y - this.state.faceBox.y) > threshold;
     }
 
     setImage(src) {
@@ -151,8 +153,12 @@ export default class App extends React.Component {
         const capturePhoto = (<CapturePhoto webcam={this.webcam}
                                             setRef={this.setRef}
                                             {...this.state}
+                                            onUserMedia={this.handlingCurrentFrame()}
                                             onCapture={this.onCapture}
-                                            handlePhotoChoose={this.handlePhotoChoose}/>);
+                                            onNext={this.handlingCurrentFrame}
+                                            handlePhotoChoose={this.handlePhotoChoose}
+                                            setLeftInfo={this.setLeftInfo}
+                                            setTopInfo={this.setTopInfo}/>);
 
 
         return (<div style={{display: 'flex'}}>

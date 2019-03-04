@@ -14,7 +14,7 @@ export default class CheckPhoto extends React.Component {
     render() {
         return (<div className="main-div">
             <div className="typography">Confirm photo</div>
-            <img className="check-photo" src={this.props.imageSrc}/>
+            <img className="check-photo-img" src={this.props.imageSrc}/>
             <button className="secondary-button back-button" onClick={this.props.onBack}/>
             <button className="main-button" onClick={this.props.onConfirm}>Confirm</button>
             <button className="next-button next-button" onClick={this.onNext}/>

@@ -16,6 +16,7 @@ class ImageMirrorer {
         this.img.src = webcam.getScreenshot();
     }
 
+
     async finishMirroring() {
         this.canvas.width = this.img.width;
         this.canvas.height = this.img.height;

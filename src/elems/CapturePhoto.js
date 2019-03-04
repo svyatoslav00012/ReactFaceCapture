@@ -1,6 +1,24 @@
 import React from 'react';
 import Webcam from 'react-webcam';
 
+function scaledMirror(scaleFactor) {
+    const scale = 'scale(-' + scaleFactor + ', ' + scaleFactor + ')';
+    return transformScaleStyleObject(scale)
+}
+
+function transformScale(scaleFactor) {
+    const scale = 'scale(' + scaleFactor + ', ' + scaleFactor + ')';
+    return transformScaleStyleObject(scale);
+}
+
+function transformScaleStyleObject(scaleProperty) {
+    return {
+        MozTransform: scaleProperty,
+        WebkitTransform: scaleProperty,
+        OTransform: scaleProperty,
+        transform: scaleProperty,
+    };
+}
 
 export default class CapturePhoto extends React.Component {
 
@@ -8,46 +26,69 @@ export default class CapturePhoto extends React.Component {
         super(props);
         this.fileInput = React.createRef();
         this.onChoosePhoto = this.onChoosePhoto.bind(this);
-        this.onNext = this.onNext.bind(this);
-        this.onUserMedia = this.onUserMedia.bind(this);
     }
 
     onChoosePhoto() {
         this.fileInput.click();
     }
 
-    onNext() {
-        alert("onNext")
-    }
+    calculateScaleLeftTop() {
+        const videoCnstrts = this.props.videoConstraints;
+        const box = this.props.faceBox;
+        const rectWidth = this.props.viewport.height * 0.45;
+        const rectHeight = this.props.viewport.height * 0.8;
 
-    onUserMedia(userMedia) {
+        const minScale = Math.max(rectWidth / videoCnstrts.width, rectHeight / videoCnstrts.height);
+        const requiredScale = rectWidth / box.width;
+        const scale = Math.max(minScale, requiredScale);
 
+        const minTop = 0;
+        const maxTop = videoCnstrts.height * scale - rectHeight;
+        const minLeft = 0;
+        const maxLeft = videoCnstrts.width * scale - rectWidth;
+
+        const topVal = box.y - rectHeight / 6;
+        const top = topVal;//Math.min(Math.max(topVal, minTop), maxTop);
+
+        const leftVal = box.x;
+        const left = leftVal;//Math.min(Math.max(leftVal, minLeft), maxLeft);
+
+        console.log("");
+        console.log("rectHeight = " + rectHeight);
+        console.log("videoHeight = " + videoCnstrts.height * scale);
+        console.log("boxY = " + box.y);
+        console.log("boxWidth = " + box.width);
+        console.log("maxTop = " + maxTop);
+        console.log("topVal = " + topVal);
+        console.log("top = " + top);
+
+        // console.log("");
+        // console.log("rectWidth = " + rectWidth);
+        // console.log("videoWidth = " + videoCnstrts.width * scale);
+        // console.log("boxX = " + box.x);
+        // console.log("maxLeft = " + maxLeft);
+        // console.log("leftVal = " + leftVal);
+        // console.log("left = " + left);
+
+        return {scale, left, top};
     }
 
     render() {
 
         const videoCnstrts = this.props.videoConstraints;
+        const box = this.props.faceBox;
         const rectWidth = this.props.viewport.height * 0.45;
         const rectHeight = this.props.viewport.height * 0.8;
 
-        const scale = rectWidth / this.props.faceBox.width;
+        const {scale, left, top} = this.calculateScaleLeftTop();
 
-        console.log(rectWidth + " / " + this.props.faceBox.width + " = " + scale);
-
-        const mirror = {
-            MozTransform: 'scale(-1, 1)',
-            WebkitTransform: 'scale(-1, 1)',
-            OTransform: 'scale(-1, 1)',
-            transform: 'scale(-1, 1)'
-        };
-
-        let drawBox = (
+        const drawBox = (
             <div
                 className="face-box"
                 style={{
                     position: 'absolute',
-                    height: this.props.faceBox.height * scale,
-                    width: this.props.faceBox.width * scale,
+                    height: Math.min(box.height * scale - 6, rectHeight),
+                    width: Math.min(box.width * scale - 6, rectWidth),
                     top: 1 / 6 * rectHeight,
                     left: 0,
                 }}
@@ -61,20 +102,20 @@ export default class CapturePhoto extends React.Component {
                 <div className="webcam-div">
                     <Webcam
                         style={{
-                            ...(this.props.mirror ? mirror : {}),
-                            left: -this.props.faceBox.x * scale,
-                            top: -this.props.faceBox.y * scale + 1 / 6 * rectHeight,
+                            ...(this.props.mirror ? scaledMirror(scale) : transformScale(scale)),
+                            left: -left,
+                            top: -top,
                         }}
                         className="webcam-video"
                         audio={false}
                         imageSmoothing={true}
-                        height={videoCnstrts.height * scale}
-                        width={videoCnstrts.width * scale}
+                        height={videoCnstrts.height}
+                        width={videoCnstrts.width}
                         ref={this.props.setRef}
                         screenshotFormat="image/jpeg"
                         screenshotQuality={1}
                         videoConstraints={videoCnstrts}
-                        onUserMedia={this.onUserMedia}
+                        onUserMedia={this.props.onUserMedia}
                     />
                 </div>
                 {drawBox}
@@ -90,7 +131,7 @@ export default class CapturePhoto extends React.Component {
                        ref={input => this.fileInput = input}/>
                 <button className="secondary-button photo-button" onClick={this.onChoosePhoto}/>
                 <button className="main-button" onClick={this.props.onCapture}>Pick photo</button>
-                <button className="next-button next-button" onClick={this.onNext}/>
+                <button className="next-button next-button" onClick={this.props.onNext}/>
             </div>
         );
     }

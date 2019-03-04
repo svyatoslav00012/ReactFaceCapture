@@ -17,19 +17,16 @@ class FaceDetector {
         await faceapi.loadFaceRecognitionModel(MODEL_URL);
     }
 
-    async faceDetection(imageSrc, mirror, webcam, setFaceBox, callback) {
-        this.webcam = webcam;
+    faceDetection(mirror, webcam, setFaceBox, callback) {
         this.setFaceBox = setFaceBox;
         this.callback = callback;
-        if (!imageSrc)
             mirror ?
                 ImageMirrorer.captureAndMirrorImage(webcam, this.detectFace)
                 :
-                await this.detectFace(this.webcam.getScreenshot());
+                this.detectFace(webcam.getScreenshot());
     }
 
-
-    async detectFace(src, func) {
+    async detectFace(src) {
         await this.getFullFaceDescription(
             src,
         ).then(fullDesc => {
@@ -47,7 +44,7 @@ class FaceDetector {
     async getFullFaceDescription(src) {
         let img = await faceapi.fetchImage(src);
         const mtcnnParams = {
-            minFaceSize: 200
+            minFaceSize: 100
         };
         let res = await faceapi.mtcnn(img, mtcnnParams);
         return res[0];
