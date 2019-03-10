@@ -1,22 +1,19 @@
 import React from 'react';
 import Webcam from 'react-webcam';
 
-function scaledMirror(scaleFactor) {
-    const scale = 'scale(-' + scaleFactor + ', ' + scaleFactor + ')';
-    return transformScaleStyleObject(scale)
+function getTransformProperty(isMirror, scaleFactor, x, y){
+    const scaleValue = 'scale(' + (isMirror ? '-' : '') + scaleFactor + ', ' + scaleFactor + ')';
+    const translateValue = 'translate(' + x + 'px, ' + y + 'px)';
+    return getTransformStyleObject(scaleValue);// + ' ' + translateValue);
 }
 
-function transformScale(scaleFactor) {
-    const scale = 'scale(' + scaleFactor + ', ' + scaleFactor + ')';
-    return transformScaleStyleObject(scale);
-}
 
-function transformScaleStyleObject(scaleProperty) {
+function getTransformStyleObject(transformValue) {
     return {
-        MozTransform: scaleProperty,
-        WebkitTransform: scaleProperty,
-        OTransform: scaleProperty,
-        transform: scaleProperty,
+        MozTransform: transformValue,
+        WebkitTransform: transformValue,
+        OTransform: transformValue,
+        transform: transformValue,
     };
 }
 
@@ -38,37 +35,32 @@ export default class CapturePhoto extends React.Component {
         const rectWidth = this.props.viewport.height * 0.45;
         const rectHeight = this.props.viewport.height * 0.8;
 
+        const videoMidX = videoCnstrts.width / 2;
+        const videoMidY = videoCnstrts.height / 2;
+
         const minScale = Math.max(rectWidth / videoCnstrts.width, rectHeight / videoCnstrts.height);
         const requiredScale = rectWidth / box.width;
         const scale = Math.max(minScale, requiredScale);
 
-        const minTop = 0;
-        const maxTop = videoCnstrts.height * scale - rectHeight;
-        const minLeft = 0;
-        const maxLeft = videoCnstrts.width * scale - rectWidth;
+        const relX = box.x - videoMidX;
+        const relY = box.y - videoMidY;
 
-        const topVal = box.y - rectHeight / 6;
-        const top = topVal;//Math.min(Math.max(topVal, minTop), maxTop);
+        const leftVal = -videoCnstrts.width / 2 - relX * scale;
+        const topVal = -videoCnstrts.height / 2 - relY * scale + rectHeight / 6;
 
-        const leftVal = box.x;
-        const left = leftVal;//Math.min(Math.max(leftVal, minLeft), maxLeft);
+        const dx = videoCnstrts.width / 2 * (scale - 1);
+        const dy = videoCnstrts.height / 2 * (scale - 1);
 
-        console.log("");
-        console.log("rectHeight = " + rectHeight);
-        console.log("videoHeight = " + videoCnstrts.height * scale);
-        console.log("boxY = " + box.y);
-        console.log("boxWidth = " + box.width);
-        console.log("maxTop = " + maxTop);
-        console.log("topVal = " + topVal);
-        console.log("top = " + top);
 
-        // console.log("");
-        // console.log("rectWidth = " + rectWidth);
-        // console.log("videoWidth = " + videoCnstrts.width * scale);
-        // console.log("boxX = " + box.x);
-        // console.log("maxLeft = " + maxLeft);
-        // console.log("leftVal = " + leftVal);
-        // console.log("left = " + left);
+        const minTop = -(videoCnstrts.height + dy - rectHeight);
+        const maxTop = dy;
+        const minLeft = -(videoCnstrts.width + dx - rectWidth);
+        const maxLeft = dx;
+
+        const left = Math.min(Math.max(leftVal, minLeft), maxLeft);
+        const top = Math.min(Math.max(topVal, minTop), maxTop);
+
+        console.log(scale + " " + left + " " + top);
 
         return {scale, left, top};
     }
@@ -89,7 +81,7 @@ export default class CapturePhoto extends React.Component {
                     position: 'absolute',
                     height: Math.min(box.height * scale - 6, rectHeight),
                     width: Math.min(box.width * scale - 6, rectWidth),
-                    top: 1 / 6 * rectHeight,
+                    top: rectHeight / 6,
                     left: 0,
                 }}
             />
@@ -102,9 +94,9 @@ export default class CapturePhoto extends React.Component {
                 <div className="webcam-div">
                     <Webcam
                         style={{
-                            ...(this.props.mirror ? scaledMirror(scale) : transformScale(scale)),
-                            left: -left,
-                            top: -top,
+                            top: top,
+                            left: left,
+                            ...getTransformProperty(this.props.mirror, scale, left, -top),
                         }}
                         className="webcam-video"
                         audio={false}

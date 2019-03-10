@@ -124,7 +124,7 @@ export default class App extends React.Component {
     }
 
     isFarFromCurrent(faceBox) {
-        const threshold = 10;
+        const threshold = 20;
         return Math.abs(faceBox.x - this.state.faceBox.x) > threshold ||
             Math.abs(faceBox.y - this.state.faceBox.y) > threshold;
     }
