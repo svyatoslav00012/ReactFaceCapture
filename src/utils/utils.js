@@ -35,49 +35,38 @@ let selectedHeight;
 let mid;
 
 export async function findMaxResolution() {
-    await FindMaximum_WidthHeight_ForCamera();
-    return {
-        width: selectedWidth,
-        height: selectedHeight
-    };
-}
-
-function FindMaximum_WidthHeight_ForCamera() {
-    console.log("left:right = ", left, ":", right);
+    console.log("left = ", left, ", right = ", right);
     if (left > right) {
         console.log("Selected Height:Width = ", selectedWidth, ":", selectedHeight);
-        return;
+        return {height: selectedHeight, width: selectedWidth};
     }
 
     mid = Math.floor((left + right) / 2);
 
-    var temporaryConstraints = {
+    const temporaryConstraints = {
         video: {
-            width: ResolutionsToCheck[mid].width,
-            height: ResolutionsToCheck[mid].height,
+            mandatory: {
+                minWidth: ResolutionsToCheck[mid].width,
+                minHeight: ResolutionsToCheck[mid].height,
+                maxWidth: ResolutionsToCheck[mid].width,
+                maxHeight: ResolutionsToCheck[mid].height
+            }
         }
     };
 
-    navigator.mediaDevices.getUserMedia(temporaryConstraints).then(checkSuccess).catch(checkError);
-}
-
-function checkSuccess(stream) {
-    console.log("Success for --> ", mid, " ", ResolutionsToCheck[mid]);
-    selectedWidth = ResolutionsToCheck[mid].width;
-    selectedHeight = ResolutionsToCheck[mid].height;
-
-    left = mid + 1;
-
-    for (let track of stream.getTracks()) {
-        track.stop()
-    }
-
-    FindMaximum_WidthHeight_ForCamera();
-}
-
-function checkError(error) {
-    console.log("Failed for --> " + mid, " ", ResolutionsToCheck[mid], " ", error);
-    right = mid - 1;
-
-    FindMaximum_WidthHeight_ForCamera();
+    return navigator.mediaDevices.getUserMedia(temporaryConstraints)
+        .then(stream => {
+            console.log("Success for --> ", mid, " ", ResolutionsToCheck[mid]);
+            selectedWidth = ResolutionsToCheck[mid].width;
+            selectedHeight = ResolutionsToCheck[mid].height;
+            left = mid + 1;
+            for (let track of stream.getTracks()) {
+                track.stop()
+            }
+            return findMaxResolution();
+        }).catch(error => {
+            console.log("Failed for --> " + mid, " ", ResolutionsToCheck[mid], " ", error);
+            right = mid - 1;
+            return findMaxResolution();
+        });
 }

@@ -1,6 +1,21 @@
 import React from 'react';
 import Webcam from 'react-webcam';
 
+function getTransformProperty(isMirror, scaleFactor, x, y){
+    const scaleValue = 'scale(' + (isMirror ? '-' : '') + scaleFactor + ', ' + scaleFactor + ')';
+    const translateValue = 'translate(' + x + 'px, ' + y + 'px)';
+    return getTransformStyleObject(scaleValue);// + ' ' + translateValue);
+}
+
+
+function getTransformStyleObject(transformValue) {
+    return {
+        MozTransform: transformValue,
+        WebkitTransform: transformValue,
+        OTransform: transformValue,
+        transform: transformValue,
+    };
+}
 
 export default class CapturePhoto extends React.Component {
 
@@ -8,71 +23,97 @@ export default class CapturePhoto extends React.Component {
         super(props);
         this.fileInput = React.createRef();
         this.onChoosePhoto = this.onChoosePhoto.bind(this);
-        this.onNext = this.onNext.bind(this);
-        this.onUserMedia = this.onUserMedia.bind(this);
     }
 
     onChoosePhoto() {
         this.fileInput.click();
     }
 
-    onNext() {
-        alert("onNext")
-    }
+    calculateScaleLeftTop() {
+        const videoCnstrts = this.props.videoConstraints;
+        const box = this.props.faceBox;
+        const rectWidth = this.props.viewport.height * 0.45;
+        const rectHeight = this.props.viewport.height * 0.8;
 
-    onUserMedia(userMedia) {
+        const videoMidX = videoCnstrts.width / 2;
+        const videoMidY = videoCnstrts.height / 2;
 
+        const minScale = Math.max(rectWidth / videoCnstrts.width, rectHeight / videoCnstrts.height);
+        const requiredScale = rectWidth / box.width;
+        const scale = Math.max(minScale, requiredScale);
+
+        const relX = box.x - videoMidX;
+        const relY = box.y - videoMidY;
+
+        const leftVal = -videoCnstrts.width / 2 - relX * scale;
+        const topVal = -videoCnstrts.height / 2 - relY * scale + rectHeight / 6;
+
+        const dx = videoCnstrts.width / 2 * (scale - 1);
+        const dy = videoCnstrts.height / 2 * (scale - 1);
+
+
+        const minTop = -(videoCnstrts.height + dy - rectHeight);
+        const maxTop = dy;
+        const minLeft = -(videoCnstrts.width + dx - rectWidth);
+        const maxLeft = dx;
+
+        const left = Math.min(Math.max(leftVal, minLeft), maxLeft);
+        const top = Math.min(Math.max(topVal, minTop), maxTop);
+
+        console.log(scale + " " + left + " " + top);
+
+        return {scale, left, top};
     }
 
     render() {
 
-        const scale = 1.5;
+        const videoCnstrts = this.props.videoConstraints;
+        const box = this.props.faceBox;
+        const rectWidth = this.props.viewport.height * 0.45;
+        const rectHeight = this.props.viewport.height * 0.8;
 
-        const size = {
-            width: this.props.videoConstraints.width * scale,
-            height: this.props.videoConstraints.height * scale,
-        };
+        const {scale, left, top} = this.calculateScaleLeftTop();
 
-        const mirror = {
-            MozTransform: 'scale(-1, 1)',
-            WebkitTransform: 'scale(-1, 1)',
-            OTransform: 'scale(-1, 1)',
-            transform: 'scale(-1, 1)'
-        };
-
-        let drawBox = (
-            <div>
-                <div
-                    className="face-box"
-                    style={{
-                        height: this.props.faceBox.height,
-                        width: this.props.faceBox.width,
-                        transform: `translate(${this.props.faceBox.x}px,${this.props.faceBox.y}px)`,
-                    }}
-                >
-                </div>
-            </div>
+        const drawBox = (
+            <div
+                className="face-box"
+                style={{
+                    position: 'absolute',
+                    height: Math.min(box.height * scale - 6, rectHeight),
+                    width: Math.min(box.width * scale - 6, rectWidth),
+                    top: rectHeight / 6,
+                    left: 0,
+                }}
+            />
         );
 
         return (
 
-            <div style={size} className="main-div">
+            <div className="main-div">
                 <div className="typography">Add photo</div>
-                <Webcam
-                    style={this.props.mirror ? mirror : {}}
-                    className="webcam-video"
-                    audio={false}
-                    imageSmoothing={true}
-                    height={size.height}
-                    width={size.width}
-                    ref={this.props.setRef}
-                    screenshotFormat="image/jpeg"
-                    screenshotQuality={1}
-                    videoConstraints={this.props.videoConstraints}
-                    onUserMedia={this.onUserMedia}
-                />
+                <div className="webcam-div">
+                    <Webcam
+                        style={{
+                            top: top,
+                            left: left,
+                            ...getTransformProperty(this.props.mirror, scale, left, -top),
+                        }}
+                        className="webcam-video"
+                        audio={false}
+                        imageSmoothing={true}
+                        height={videoCnstrts.height}
+                        width={videoCnstrts.width}
+                        ref={this.props.setRef}
+                        screenshotFormat="image/jpeg"
+                        screenshotQuality={1}
+                        videoConstraints={videoCnstrts}
+                        onUserMedia={this.props.onUserMedia}
+                    />
+                </div>
                 {drawBox}
-                <div className="oval"/>
+                <div className="oval-container">
+                    <div className="oval"/>
+                </div>
                 <div className="vl"/>
                 <div className="hl"/>
 
@@ -82,7 +123,7 @@ export default class CapturePhoto extends React.Component {
                        ref={input => this.fileInput = input}/>
                 <button className="secondary-button photo-button" onClick={this.onChoosePhoto}/>
                 <button className="main-button" onClick={this.props.onCapture}>Pick photo</button>
-                <button className="next-button next-button" onClick={this.onNext}/>
+                <button className="next-button next-button" onClick={this.props.onNext}/>
             </div>
         );
     }

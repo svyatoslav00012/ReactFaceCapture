@@ -5,45 +5,41 @@ import './static/css/app.css';
 import CheckPhoto from "./elems/CheckPhoto";
 import Checkbox from "./elems/Checkbox";
 import FaceDetector from "./utils/FaceDetector";
-import ImageMirrorer from "./utils/ImageMirrorer";
-
-const videoConstraints = {
-    width: 320,
-    height: 480,
-    frameRate: 60,
-    facingMode: "user",
-};
+import {findMaxResolution} from "./utils/utils";
+import ImageCuter from "./utils/ImageCuter";
 
 export default class App extends React.Component {
 
-    setRef = webcam => {
-        this.webcam = webcam;
-    };
-    startHandleVideo = () => {
-        this.interval = setInterval(() =>
-                FaceDetector.faceDetection(
-                    this.state.imageSrc,
-                    this.state.mirror,
-                    this.webcam,
-                    this.setFaceBox
-                ),
-            20);
-    };
+    setRef = webcam => this.webcam = webcam;
 
     constructor(props) {
         super(props);
-        this.webcam = React.createRef();
+        this.webcam = null;
+        const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
         this.state = {
             imageSrc: null,
             mirror: true,
+            handling: true,
             faceBox: {
                 x: 0,
                 y: 0,
-                width: videoConstraints.width * 1.5,
-                height: videoConstraints.height * 1.5,
-            }
+                width: viewportHeight * 0.45,
+                height: viewportHeight * 0.4,
+            },
+            videoConstraints: {
+                width: 640,
+                height: 480,
+                frameRate: 60,
+                facingMode: "user",
+            },
+            viewport: {
+                width: viewportWidth,
+                height: viewportHeight,
+            },
         };
 
+        this.handleResize = this.handleResize.bind(this);
         this.setRef = this.setRef.bind(this);
 
         this.onCapture = this.onCapture.bind(this);
@@ -52,20 +48,46 @@ export default class App extends React.Component {
 
         this.setImage = this.setImage.bind(this);
         this.setFaceBox = this.setFaceBox.bind(this);
+        this.setVideoConstraintsResolution = this.setVideoConstraintsResolution.bind(this);
         this.onMirrorChange = this.onMirrorChange.bind(this);
 
+        this.handlingCurrentFrame = this.handlingCurrentFrame.bind(this);
         this.handlePhotoChoose = this.handlePhotoChoose.bind(this);
     }
 
-    async componentDidMount() {
-        await FaceDetector.loadModels();
-        this.startHandleVideo();
+    componentDidMount() {
+        window.addEventListener('resize', this.handleResize);
+        findMaxResolution().then(this.setVideoConstraintsResolution);
+        FaceDetector.loadModels()
+            .then(this.handlingCurrentFrame);
     }
 
+    handleResize() {
+        this.setState({
+            viewport: {
+                width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+                height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
+            },
+        });
+    }
+
+    handlingCurrentFrame() {
+        //console.log("enter handling");
+        if (this.state.handling && !!this.webcam) {
+            FaceDetector.faceDetection(
+                this.state.mirror,
+                this.webcam,
+                this.setFaceBox,
+                this.handlingCurrentFrame
+            );
+            //   console.log("oo, handling!");
+        }
+    };
+
     onCapture() {
-        if (this.state.mirror)
-            ImageMirrorer.captureAndMirrorImage(this.webcam, this.setImage);
-        else this.setImage(this.webcam.getScreenshot());
+        const screen = this.webcam.getScreenshot();
+        ImageCuter.getPartOfAnImage(screen, 0, 0, 300, 300, this.setImage);
+        this.setState({handling: false});
     }
 
     onConfirm() {
@@ -74,7 +96,9 @@ export default class App extends React.Component {
     }
 
     onBack() {
+        this.setState({handling: true});
         this.setImage(null);
+        setTimeout(this.handlingCurrentFrame, 3000);
     }
 
     onMirrorChange(e) {
@@ -83,14 +107,29 @@ export default class App extends React.Component {
         });
     }
 
-    setFaceBox(facebox) {
+    setFaceBox(faceBox) {
+        if (this.isFarFromCurrent(faceBox))
+            this.setState({
+                faceBox: faceBox
+            });
+    }
+
+    setVideoConstraintsResolution(resolution) {
         this.setState({
-            faceBox: facebox
+            videoConstraints: {
+                ...this.state.videoConstraints,
+                ...resolution
+            }
         });
     }
 
+    isFarFromCurrent(faceBox) {
+        const threshold = 20;
+        return Math.abs(faceBox.x - this.state.faceBox.x) > threshold ||
+            Math.abs(faceBox.y - this.state.faceBox.y) > threshold;
+    }
+
     setImage(src) {
-        console.log(this);
         this.setState({
             imageSrc: src
         });
@@ -106,19 +145,24 @@ export default class App extends React.Component {
 
     render() {
 
-        return (<div>
-            {this.state.imageSrc ?
-                <CheckPhoto videoConstraints={videoConstraints}
-                            imageSrc={this.state.imageSrc}
-                            onConfirm={this.onConfirm}
-                            onBack={this.onBack}/> :
-                <CapturePhoto webcam={this.webcam}
-                              setRef={this.setRef}
-                              mirror={this.state.mirror}
-                              onCapture={this.onCapture}
-                              videoConstraints={videoConstraints}
-                              faceBox={this.state.faceBox}
-                              handlePhotoChoose={this.handlePhotoChoose}/>}
+        const checkPhoto = (<CheckPhoto videoConstraints={this.state.videoConstraints}
+                                        imageSrc={this.state.imageSrc}
+                                        onConfirm={this.onConfirm}
+                                        onBack={this.onBack}/>);
+
+        const capturePhoto = (<CapturePhoto webcam={this.webcam}
+                                            setRef={this.setRef}
+                                            {...this.state}
+                                            onUserMedia={this.handlingCurrentFrame()}
+                                            onCapture={this.onCapture}
+                                            onNext={this.handlingCurrentFrame}
+                                            handlePhotoChoose={this.handlePhotoChoose}
+                                            setLeftInfo={this.setLeftInfo}
+                                            setTopInfo={this.setTopInfo}/>);
+
+
+        return (<div style={{display: 'flex'}}>
+            {this.state.imageSrc ? checkPhoto : capturePhoto}
             <Checkbox value={this.state.mirror}
                       onChange={this.onMirrorChange}
                       label="mirror"/>

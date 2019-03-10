@@ -10,13 +10,14 @@ class ImageMirrorer {
         this.finishMirroring = this.finishMirroring.bind(this);
     }
 
-    async captureAndMirrorImage(webcam, passImageFunc) {
+    captureAndMirrorImage(webcam, passImageFunc) {
         this.set.add(passImageFunc);
         this.img.onload = this.finishMirroring;
         this.img.src = webcam.getScreenshot();
     }
 
-    finishMirroring(passImageFunc) {
+
+    async finishMirroring() {
         this.canvas.width = this.img.width;
         this.canvas.height = this.img.height;
         this.ctx.drawImage(this.img, 0, 0);

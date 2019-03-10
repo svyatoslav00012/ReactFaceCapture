@@ -1,28 +1,41 @@
+.main-div, .webcam-div {
+    width: 45vh;
+    min-width: 300px;
+    padding-top: 80vh;
+}
+
 .main-div {
     position: relative;
 }
 
-.blurred-box {
+.main-div * {
     position: absolute;
+}
+
+.webcam-div {
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: inherit;
-    border-radius: 2px;
     overflow: hidden;
 }
 
-.blurred-box:after {
-    content: '';
-    width: 100%;
-    height: 100%;
-    background: inherit;
+.webcam-video {
+    top: 0;
+    left: 0;
+}
+
+.face-box {
     position: absolute;
     top: 0;
     left: 0;
-    box-shadow: inset 0 0 0 200px rgba(255, 255, 255, 0.05);
-    filter: blur(10px);
+    border: solid blue;
+    z-index: 3;
+    pointer-events: none;
+    background: transparent;
+}
+
+.check-photo-img {
+    top: 0;
+    left: 0;
 }
 
 .typography {
@@ -75,15 +88,6 @@ button {
     right: 5%;
 }
 
-.face-box {
-    position: absolute;
-    top: 0;
-    left: 0;
-    border: solid blue;
-    zIndex: 3;
-    background: transparent;
-}
-
 .back-button {
     background-image: url("../icons/return.png");
 }
@@ -96,6 +100,15 @@ button {
     background-image: url("../icons/next.png");
 }
 
+.oval-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
 .oval {
     position: absolute;
     top: 40%;
@@ -105,12 +118,7 @@ button {
     box-shadow: 0 0 9999px 99999px rgba(0, 0, 0, 0.7);
     transform: translate(-50%, -50%);
     border: 2px solid rgba(255, 255, 255, 0.5);
-    /*border: 9999px solid rgba(0, 0, 0, 0.7);*/
     border-radius: 40%;
-}
-
-.oval:after {
-
 }
 
 .vl {
@@ -127,6 +135,6 @@ button {
     width: 90%;
     height: 2px;
     left: 5%;
-    top: 35%;
+    top: 37%;
     background-color: rgba(255, 255, 255, 0.5);
 }

@@ -1,8 +1,8 @@
 # ReactFaceCapture
-Make photo of your face, check it and send to server
+Easily make photo of your face, check it and send to server
 ### functionality:
+- face tracking & following
 - making photo
 - viewing photo
 - mirroring camera
-- face tracking
 - selecting image from disk
