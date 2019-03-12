@@ -61,6 +61,8 @@ export default class CapturePhoto extends React.Component {
         const top = Math.min(Math.max(topVal, minTop), maxTop);
 
         console.log(scale + " " + left + " " + top);
+        console.log("faceBoxWidth = " + box.width);
+        console.log();
 
         return {scale, left, top};
     }

@@ -1,27 +1,39 @@
-class ImageCuter {
+class ImageCropper {
 
     constructor() {
         this.set = new Set();
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
         this.img = new Image();
-        this.cutPart = this.cutPart.bind(this);
+        this.crop = this.crop.bind(this);
     }
 
-    getPartOfAnImage(imageSrc, x, y, width, height, passImageFunc) {
+    cropImage(imageSrc, frameToCrop, rectWidth, rectHeight, passImageFunc) {
         this.set.add(passImageFunc);
-        this.subImage = {x, y, width, height};
-        this.img.onload = this.cutPart;
+        this.subImage = frameToCrop;
+        this.rectWidth = rectWidth;
+        this.rectHeight = rectHeight;
+        this.img.onload = this.crop;
         this.img.src = imageSrc;
     }
 
-    cutPart() {
-        this.canvas.width = this.img.width;
-        this.canvas.height = this.img.height;
-        this.ctx.drawImage(this.img, 0, 0, 640, 480, this.subImage.x, this.subImage.y, this.subImage.width, this.subImage.height);
+    crop() {
+        this.canvas.width = this.rectWidth;
+        this.canvas.height = this.rectHeight;
+        this.ctx.drawImage(this.img,
+            this.subImage.x,
+            this.subImage.y,
+            this.subImage.width,
+            this.subImage.height,
+            0,
+            0,
+            this.rectWidth,
+            this.rectHeight);
         for (let f of this.set)
             f(this.canvas.toDataURL());
     }
+
+
 }
 
-export default new ImageCuter();
+export default new ImageCropper();
