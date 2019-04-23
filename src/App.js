@@ -9,6 +9,9 @@ import {findMaxResolution} from "./utils/utils";
 import ImageCuter from "./utils/ImageCuter";
 import ImageMirrorer from "./utils/ImageMirrorer";
 
+const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
 export default class App extends React.Component {
 
     setRef = webcam => this.webcam = webcam;
@@ -16,8 +19,6 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
         this.webcam = null;
-        const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-        const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
         this.state = {
             imageSrc: null,
             mirror: true,
@@ -210,8 +211,12 @@ export default class App extends React.Component {
                                             setTopInfo={this.setTopInfo}/>);
 
 
-        return (<div style={{display: 'flex'}}>
-            {this.state.imageSrc ? checkPhoto : capturePhoto}
+        return (<div style={{display: 'flex', width: '100%', justifyContent:'center'}}>
+            <div>
+                {this.state.imageSrc ? checkPhoto : capturePhoto}
+                <h4 style={{width: viewportHeight * 0.45}}>If you don't see video stream, check if smth else using your webcamera.
+                    Also i'm working on browser compatibility)</h4>
+            </div>
             <Checkbox value={this.state.mirror}
                       onChange={this.onMirrorChange}
                       label="mirror"/>
