@@ -1,7 +1,7 @@
 import React from 'react';
 import Webcam from 'react-webcam';
 
-function getTransformProperty(isMirror, scaleFactor, x, y){
+function getTransformProperty(isMirror, scaleFactor, x, y) {
     const scaleValue = 'scale(' + (isMirror ? '-' : '') + scaleFactor + ', ' + scaleFactor + ')';
     const translateValue = 'translate(' + x + 'px, ' + y + 'px)';
     return getTransformStyleObject(scaleValue);// + ' ' + translateValue);
@@ -19,15 +19,12 @@ function getTransformStyleObject(transformValue) {
 
 export default class CapturePhoto extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.fileInput = React.createRef();
-        this.onChoosePhoto = this.onChoosePhoto.bind(this);
-    }
+    fileInput = React.createRef();
+    onChoosePhoto = this.onChoosePhoto.bind(this);
 
-    onChoosePhoto() {
+    onChoosePhoto = () => {
         this.fileInput.click();
-    }
+    };
 
     calculateScaleLeftTop() {
         const videoCnstrts = this.props.videoConstraints;

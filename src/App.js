@@ -8,6 +8,12 @@ import FaceDetector from "./utils/FaceDetector";
 import {findMaxResolution} from "./utils/utils";
 import ImageCuter from "./utils/ImageCuter";
 import ImageMirrorer from "./utils/ImageMirrorer";
+import ReactGA from 'react-ga';
+
+function initializeReactGA() {
+    ReactGA.initialize('UA-138960980-1');
+    ReactGA.pageview('/');
+}
 
 const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -16,72 +22,53 @@ export default class App extends React.Component {
 
     setRef = webcam => this.webcam = webcam;
 
-    constructor(props) {
-        super(props);
-        this.webcam = null;
-        this.state = {
-            imageSrc: null,
-            mirror: true,
-            handling: true,
-            faceBox: {
-                x: 0,
-                y: 0,
-                width: viewportHeight * 0.45,
-                height: viewportHeight * 0.4,
-            },
-            //bounds of frame that we capture (according to face position and size)
-            capturedFrame: {
-                x: 0,
-                y: 0,
-                width: viewportHeight * 0.45,
-                height: viewportHeight * 0.8
-            },
-            videoConstraints: {
-                width: 640,
-                height: 480,
-                frameRate: 60,
-                facingMode: "user",
-            },
-            viewport: {
-                width: viewportWidth,
-                height: viewportHeight,
-            },
-        };
+    webcam = null;
+    state = {
+        imageSrc: null,
+        mirror: true,
+        handling: true,
+        faceBox: {
+            x: 0,
+            y: 0,
+            width: viewportHeight * 0.45,
+            height: viewportHeight * 0.4,
+        },
+        //bounds of frame that we capture (according to face position and size)
+        capturedFrame: {
+            x: 0,
+            y: 0,
+            width: viewportHeight * 0.45,
+            height: viewportHeight * 0.8
+        },
+        videoConstraints: {
+            width: 640,
+            height: 480,
+            frameRate: 60,
+            facingMode: "user",
+        },
+        viewport: {
+            width: viewportWidth,
+            height: viewportHeight,
+        },
+    };
 
-        this.handleResize = this.handleResize.bind(this);
-        this.setRef = this.setRef.bind(this);
-
-        this.onCapture = this.onCapture.bind(this);
-        this.cropCapturedImage = this.cropCapturedImage.bind(this);
-        this.onConfirm = this.onConfirm.bind(this);
-        this.onBack = this.onBack.bind(this);
-
-        this.setImage = this.setImage.bind(this);
-        this.setFaceBoxAndCalculateCapturedFrame = this.setFaceBoxAndCalculateCapturedFrame.bind(this);
-        this.setVideoConstraintsResolution = this.setVideoConstraintsResolution.bind(this);
-        this.onMirrorChange = this.onMirrorChange.bind(this);
-
-        this.handlingCurrentFrame = this.handlingCurrentFrame.bind(this);
-        this.handlePhotoChoose = this.handlePhotoChoose.bind(this);
-    }
-
-    componentDidMount() {
+    componentDidMount = () => {
         window.addEventListener('resize', this.handleResize);
         findMaxResolution().then(this.setVideoConstraintsResolution);
         FaceDetector.loadModels()
             .then(this.handlingCurrentFrame);
-    }
+    };
 
-    handleResize() {
+    handleResize = () => {
         this.setState({
             viewport: {
                 width: Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
                 height: Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
             },
         });
-    }
+    };
 
-    handlingCurrentFrame() {
+    handlingCurrentFrame = () => {
         //console.log("enter handling");
         if (this.state.handling && !!this.webcam) {
             FaceDetector.faceDetection(
@@ -94,13 +81,17 @@ export default class App extends React.Component {
         }
     };
 
-    onCapture(){
-        if(this.state.mirror)
+    onCapture = () => {
+        ReactGA.event({
+            category: 'User',
+            action: 'Capture'
+        });
+        if (this.state.mirror)
             ImageMirrorer.captureAndMirrorImage(this.webcam, this.cropCapturedImage);
         else this.cropCapturedImage(this.webcam.getScreenshot());
-    }
+    };
 
-    cropCapturedImage(src){
+    cropCapturedImage = (src) => {
         const rectWidth = this.state.viewport.height * 0.45;
         const rectHeight = this.state.viewport.height * 0.8;
 
@@ -112,26 +103,26 @@ export default class App extends React.Component {
             this.setImage
         );
         this.setState({handling: false});
-    }
+    };
 
-    onConfirm() {
+    onConfirm = () => {
         axios.post("/addImage", this.state.imageSrc);
         console.log(this.state.imageSrc);
-    }
+    };
 
-    onBack() {
+    onBack = () => {
         this.setState({handling: true});
         this.setImage(null);
         setTimeout(this.handlingCurrentFrame, 3000);
-    }
+    };
 
-    onMirrorChange(e) {
+    onMirrorChange = (e) => {
         this.setState({
             mirror: e.target.checked
         });
-    }
+    };
 
-    setFaceBoxAndCalculateCapturedFrame(faceBox) {
+    setFaceBoxAndCalculateCapturedFrame = (faceBox) => {
 
         let frameHeight, frameWidth;
 
@@ -139,11 +130,10 @@ export default class App extends React.Component {
         const estimatedFrameHeight = estimatedFrameWidth * 16 / 9;
 
         //check for album-oriented(horizontal) web cameras, to keep image in shape of vertical rectangle
-        if(estimatedFrameHeight > this.state.videoConstraints.height){
+        if (estimatedFrameHeight > this.state.videoConstraints.height) {
             frameHeight = this.state.videoConstraints.height;
             frameWidth = frameHeight / 16 * 9;
-        }
-        else {
+        } else {
             frameWidth = estimatedFrameWidth;
             frameHeight = estimatedFrameHeight;
         }
@@ -162,36 +152,36 @@ export default class App extends React.Component {
                     height: frameHeight,
                 }
             });
-    }
+    };
 
-    setVideoConstraintsResolution(resolution) {
+    setVideoConstraintsResolution = (resolution) => {
         this.setState({
             videoConstraints: {
                 ...this.state.videoConstraints,
                 ...resolution
             }
         });
-    }
+    };
 
-    isFarFromCurrent(faceBox) {
+    isFarFromCurrent = (faceBox) => {
         const threshold = 20;
         return Math.abs(faceBox.x - this.state.faceBox.x) > threshold ||
             Math.abs(faceBox.y - this.state.faceBox.y) > threshold;
-    }
+    };
 
-    setImage(src) {
+    setImage = (src) => {
         this.setState({
             imageSrc: src
         });
-    }
+    };
 
-    handlePhotoChoose(e) {
+    handlePhotoChoose = (e) => {
         e.preventDefault();
         let reader = new FileReader();
         let file = e.target.files[0];
         reader.onloadend = () => this.setImage(reader.result);
         reader.readAsDataURL(file)
-    }
+    };
 
     render() {
 
@@ -211,10 +201,11 @@ export default class App extends React.Component {
                                             setTopInfo={this.setTopInfo}/>);
 
 
-        return (<div style={{display: 'flex', width: '100%', justifyContent:'center'}}>
+        return (<div style={{display: 'flex', width: '100%', justifyContent: 'center'}}>
             <div>
                 {this.state.imageSrc ? checkPhoto : capturePhoto}
-                <h4 style={{width: viewportHeight * 0.45}}>If you don't see video stream, check if smth else using your webcamera.
+                <h4 style={{width: viewportHeight * 0.45}}>If you don't see video stream, check if smth else using your
+                    webcamera.
                     Also i'm working on browser compatibility)</h4>
             </div>
             <Checkbox value={this.state.mirror}
