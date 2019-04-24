@@ -20,7 +20,6 @@ function getTransformStyleObject(transformValue) {
 export default class CapturePhoto extends React.Component {
 
     fileInput = React.createRef();
-    onChoosePhoto = this.onChoosePhoto.bind(this);
 
     onChoosePhoto = () => {
         this.fileInput.click();
